@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Belabox Live Stats</title>
+  <style>
+    body { background-color: #121212; color: #fff; font-family: sans-serif; padding: 20px; }
+    h1 { color: #00e676; }
+    .stat { margin: 10px 0; }
+    .label { font-weight: bold; color: #ccc; }
+    .value { font-size: 1.2em; }
+    .error { color: red; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Belabox Live Stats</h1>
+  <div id="stats">Loading...</div>
+  <div class="error" id="error"></div>
+
+  <script>
+    const STATS_URL = 'https://corsproxy.io/?https://stats.srt.belabox.net/SGtXsenYZ4PXSMhTNNtNy0CRAUx4Af';
+    
+    async function fetchStats() {
+      try {
+        const res = await fetch(STATS_URL);
+        if (!res.ok) throw new Error("Status: " + res.status);
+        const data = await res.json();
+        if (!data || !data.bitrate_kbps) throw new Error("No data received");
+        
+        const output = `
+          <div class="stat"><span class="label">Bitrate:</span> <span class="value">${data.bitrate_kbps} kbps</span></div>
+          <div class="stat"><span class="label">Resolution:</span> <span class="value">${data.resolution}</span></div>
+          <div class="stat"><span class="label">FPS:</span> <span class="value">${data.fps}</span></div>
+          <div class="stat"><span class="label">Latency:</span> <span class="value">${data.latency} ms</span></div>
+          <div class="stat"><span class="label">RTT:</span> <span class="value">${data.rtt} ms</span></div>
+          <div class="stat"><span class="label">Packet Loss:</span> <span class="value">${data.packet_loss_percent}%</span></div>
+          <div class="stat"><span class="label">Dropped Frames:</span> <span class="value">${data.dropped_frames}</span></div>
+          <div class="stat"><span class="label">Connected:</span> <span class="value">${data.connection_state}</span></div>
+          <div class="stat"><span class="label">Time:</span> <span class="value">${new Date().toLocaleTimeString()}</span></div>
+        `;
+        document.getElementById("stats").innerHTML = output;
+        document.getElementById("error").innerText = "";
+      } catch (err) {
+        document.getElementById("stats").innerHTML = "";
+        document.getElementById("error").innerText = "Error fetching stats: " + err.message;
+      }
+    }
+
+    setInterval(fetchStats, 2000);
+    fetchStats();
+  </script>
+</body>
+</html>
